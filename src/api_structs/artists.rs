@@ -1,7 +1,6 @@
 use crate::api_structs;
 use crate::api_structs::{Empty, Items, Serialize, Deserialize, ExternalUrls};
 
-#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Followed{
     pub artists: FollowedArtistsItems,
@@ -24,7 +23,6 @@ impl Items<Artist> for Followed {
 /*
 * ignored fields: next, cursors, limit, href
 */
-#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FollowedArtistsItems {
     pub items: Vec<Artist>,
@@ -34,7 +32,6 @@ pub struct FollowedArtistsItems {
 /*
 * ignored fields: images, popularity, uri
 */
-#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Artist {
     pub external_urls: ExternalUrls, 

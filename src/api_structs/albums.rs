@@ -1,15 +1,22 @@
 use crate::api_structs;
-use crate::api_structs::{Empty, Items, Deserialize, Serialize, ExternalUrls};
+use crate::api_structs::{Empty, Items, Image, Deserialize, Serialize, ExternalUrls};
 use crate::api_structs::artists::Artist;
+
+use crate::api_structs::SearchDataItem;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SearchData {
+    //pub albums: Vec<api_structs::SearchDataItem<Album>>,
+    pub albums: api_structs::SearchDataItem<Album>,
+}
 
 /*
 * ignored fields: href, limit, next, offset, previous
 */
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Saved {
-    total: u32,
-    items: Vec<SavedAlbumsItem>,
+    pub total: u32,
+    pub items: Vec<SavedAlbumsItem>,
 } 
 
 impl Empty<Self> for Saved {
@@ -27,7 +34,28 @@ impl Items<SavedAlbumsItem> for Saved {
     }
 }
 
-#[allow(dead_code)]
+impl Default for SearchDataItem<Album> {
+    fn default() -> Self {
+        Self {
+            previous: None,
+            offset: 0,
+            total: 0,
+            items: vec![],
+            next: None,
+            href: String::from(""),
+            limit: 0,
+        }
+    }
+}
+
+impl Default for SearchData {
+    fn default() -> Self {
+        Self {
+            albums: SearchDataItem::default()
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SavedAlbumsItem {
     added_at: String,
@@ -37,33 +65,30 @@ pub struct SavedAlbumsItem {
 /*
 * ignored fields: 
 */
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Album {
-    #[serde(alias = "album_type")]
-    _type: String,   // album or single
-    artists: Vec<Artist>,
-    external_urls: ExternalUrls,
-    name: String,
-    total_tracks: u32,
-    tracks: Tracks,
-
-    #[serde(alias = "type")]
-    obj_type: String,
+    pub album_type: String,   // album or single
+    pub artists: Vec<Artist>,
+    pub external_urls: ExternalUrls,
+    pub href: String,
+    pub id: String,
+    pub images: Vec<Image>,
+    pub name: String,
+    pub total_tracks: u32,
+    pub tracks: Option<Tracks>,
+    #[serde(alias = "type")] pub obj_type: String,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
-struct Tracks {
-    items: Vec<TracksItem>,
-    total: u32,
+pub struct Tracks {
+    pub items: Vec<TracksItem>,
+    pub total: u32,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
-struct TracksItem {
-    external_urls: ExternalUrls, 
-    name: String,
+pub struct TracksItem {
+    pub external_urls: ExternalUrls,
+    pub name: String,
 }
 
 pub fn debug_print_saved(albums: &Vec<SavedAlbumsItem>) {

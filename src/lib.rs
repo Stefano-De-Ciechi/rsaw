@@ -1,5 +1,6 @@
 pub mod api_structs;
 
+use api_structs::SearchType;
 use reqwest::{self};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::collections::HashMap;
@@ -43,9 +44,7 @@ impl SpotifyAPI {
             http_client,
         }
     }
- 
-    // TODO implement generic function where you just need to pass a struct, the request url and a path and it
-    // automatically does the request and data serialization to json file
+
     pub fn update_data<T>(&self, url: &str, path: &str) where T: Serialize + DeserializeOwned {
         let token_header = format!("Bearer {}", self.token);
 
@@ -70,7 +69,7 @@ impl SpotifyAPI {
         let body = res.json::<T>();
 
         let Ok(data) = body else {
-            eprintln!("coult not deserialize json body");
+            eprintln!("could not deserialize json body");
             return;
         };
 
@@ -139,10 +138,39 @@ impl SpotifyAPI {
 
     }
 
-    // TODO convert search_type into a struct
-    pub fn search_data(&self, search_term: &str, search_type: &str, limit: u32) {
+    // TODO create a generic function compatible with both search_album and search_playlist
+    pub fn search_album(&self, search_terms: &str, limit: u32) -> albums::SearchData {
+        let search_type = SearchType::Album;
+        let url = format!("https://api.spotify.com/v1/search?q={search_terms}&type={search_type}&limit={limit}");
+
+        let data = match self.search_data_type::<albums::SearchData>(&url) {
+            Ok(d) => d,
+            Err(err) => {
+                eprintln!("{err}");
+                albums::SearchData::default()
+            }
+        };
+
+        data
+    }
+
+    pub fn search_playlist(&self, search_terms: &str, limit: u32) -> playlists::SearchData {
+        let search_type = SearchType::Playlist;
+        let url = format!("https://api.spotify.com/v1/search?q={search_terms}&type={search_type}&limit={limit}");
+
+        let data = match self.search_data_type::<playlists::SearchData>(&url) {
+            Ok(d) => d,
+            Err(err) => {
+                eprintln!("{err}");
+                playlists::SearchData::default()
+            }
+        };
+
+        data
+    }
+
+    fn search_data_type<T>(&self, url: &str) -> Result<T, String> where T: Serialize + DeserializeOwned + std::fmt::Debug {
         let token_header = format!("Bearer {}", self.token);
-        let url = format!("https://api.spotify.com/v1/search?q={search_term}&type={search_type}&limit={limit}");
 
         let res = self.http_client
             .get(url)
@@ -152,25 +180,21 @@ impl SpotifyAPI {
             .send();
 
         let Ok(res) = res else {
-            eprintln!("could not receive response");
-            // TODO add a Result return type
-            return;
+            return Result::Err("could not receive response".to_string());
         };
 
         if !res.status().is_success() {
-            eprintln!("unsuccessful request, status: {}", res.status());
-            return;
+            let err= format!("unsuccessful request, status: {}", res.status());
+            return Result::Err(err);
         }
 
-        //let body = res.json();
-        let body = res.text().unwrap();
-        println!("{body}");
+        let body = res.json::<T>();
 
-        /*let Ok(data) = body else {
-            eprintln!("coult not deserialize json body");
-            return;
-        };*/
+        let Ok(data) = body else {
+            return Result::Err("could not deserialize json body".to_string());
+        };
 
+        Result::Ok(data)
 
     }
 
@@ -185,5 +209,4 @@ fn read_from_env_file(var_name: &str) -> String {
         String::new()
     })
 }
-
 

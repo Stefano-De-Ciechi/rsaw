@@ -1,10 +1,38 @@
 use crate::api_structs;
-use crate::api_structs::{Empty, Items, Deserialize, Serialize, ExternalUrls, Owner};
+use crate::api_structs::{Empty, Items, Image, Deserialize, Serialize, ExternalUrls, Owner};
+
+use super::SearchDataItem;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SearchData {
+    pub playlists: api_structs::SearchDataItem<Playlist>,
+}
+
+impl Default for SearchDataItem<Playlist> {
+    fn default() -> Self {
+        Self {
+            href: String::from(""),
+            next: None,
+            limit: 0,
+            offset: 0,
+            previous: None,
+            items: vec![],
+            total: 0,
+        }
+    }
+}
+
+impl Default for SearchData {
+    fn default() -> Self {
+        Self {
+            playlists: SearchDataItem::default()
+        }
+    }
+}
 
 /*
 * ignored fields: href, limit, next, offset, previous
 */
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Followed {
     items: Vec<Playlist>,
@@ -29,17 +57,17 @@ impl Items<Playlist> for Followed {
 /*
 * ignored fields: images, primary-color, snapshot-id, tracks, uri
 */
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Playlist {
     pub collaborative: bool,
     pub description: String,
-    #[serde(alias = "external-urls")] pub external_urls: ExternalUrls,
+    pub external_urls: ExternalUrls,
     pub href: String,
     pub id: String,
+    pub images: Vec<Image>,
     pub name: String,
-    pub owner: Owner,
-    pub public: bool,
+    pub owner: Option<Owner>,
+    pub public: Option<bool>,
     pub tracks: Tracks,
     #[serde(alias = "type")] pub obj_type: String,
 }
@@ -47,9 +75,9 @@ pub struct Playlist {
 /*
 * ignored fields: href
 */
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Tracks {
+    pub href: String,
     pub total: u32,
 }
 
@@ -59,7 +87,9 @@ pub fn debug_print_followed(playlists: &Vec<Playlist>) {
     println!("{}", "-".repeat(93));
 
     for p in playlists {
-        println!("{:<50} | {:>10} | {:>11} | {:>12}", p.name, p.public, p.collaborative, p.tracks.total);
+        if let Some(is_public) = p.public {
+            println!("{:<50} | {:>10} | {:>11} | {:>12}", p.name, is_public, p.collaborative, p.tracks.total);
+        }
     }
 }
 
