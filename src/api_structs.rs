@@ -19,6 +19,11 @@ pub struct SearchDataItem<T> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct SearchListItem<T> {
+    pub items: Vec<T>
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExternalUrls {
     pub spotify: String,
 }

@@ -6,7 +6,6 @@ use crate::api_structs::SearchDataItem;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SearchData {
-    //pub albums: Vec<api_structs::SearchDataItem<Album>>,
     pub albums: api_structs::SearchDataItem<Album>,
 }
 
@@ -58,8 +57,8 @@ impl Default for SearchData {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SavedAlbumsItem {
-    added_at: String,
-    album: Album,
+    pub added_at: String,
+    pub album: Album,
 }
 
 /*
@@ -79,16 +78,37 @@ pub struct Album {
     #[serde(alias = "type")] pub obj_type: String,
 }
 
+impl Album {
+    pub fn get_track_list(&self) -> Option<&Vec<TracksItem>> {
+        let tracks = match &self.tracks {
+            Some(t) => t,
+            None => return None,
+        };
+
+        let track_list = match &tracks.items {
+            Some(tl) => tl,
+            None => return None,
+        };
+
+        Some(track_list)
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Tracks {
-    pub items: Vec<TracksItem>,
+    pub items: Option<Vec<TracksItem>>,
     pub total: u32,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TracksItem {
-    pub external_urls: ExternalUrls,
     pub name: String,
+    pub duration_ms: u32,
+    pub explicit: bool,
+    pub external_urls: ExternalUrls,
+    pub href: String,
+    pub id: String,
+    pub track_number: u32,
 }
 
 pub fn debug_print_saved(albums: &Vec<SavedAlbumsItem>) {

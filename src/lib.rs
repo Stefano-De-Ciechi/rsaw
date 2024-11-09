@@ -1,6 +1,6 @@
 pub mod api_structs;
 
-use api_structs::SearchType;
+use api_structs::{SearchType, SearchListItem};
 use reqwest::{self};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::collections::HashMap;
@@ -154,6 +154,21 @@ impl SpotifyAPI {
         data
     }
 
+    pub fn get_album_tracks_from_id(&self, album_id: &str) -> Option<Vec<albums::TracksItem>> {
+        let url = format!("https://api.spotify.com/v1/albums/{album_id}/tracks");
+        let data = self.search_data_type::<SearchListItem<albums::TracksItem>>(&url);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(err) => {
+                eprintln!("{err}");
+                return None;
+            }
+        };
+
+        Some(data.items)
+    }
+
     pub fn search_playlist(&self, search_terms: &str, limit: u32) -> playlists::SearchData {
         let search_type = SearchType::Playlist;
         let url = format!("https://api.spotify.com/v1/search?q={search_terms}&type={search_type}&limit={limit}");
@@ -210,3 +225,8 @@ fn read_from_env_file(var_name: &str) -> String {
     })
 }
 
+impl albums::Album {
+    pub fn get_track_list_from_api(&self, api_client: &SpotifyAPI) -> Option<Vec<albums::TracksItem>> {
+        api_client.get_album_tracks_from_id(&self.id)
+    }
+}
