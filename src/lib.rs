@@ -29,10 +29,10 @@ impl SpotifyAPI {
 
     pub fn new() -> Self {
         // TODO implement some sort of token caching system
-        let client_id = read_from_env_file("CLIENT_ID");
-        let client_secret = read_from_env_file("CLIENT_SECRET");
-        let token = read_from_env_file("TOKEN");
-        let refresh_token = read_from_env_file("REFRESH_TOKEN");
+        let client_id = read_from_env_file("SPOTIFY_CLIENT_ID");
+        let client_secret = read_from_env_file("SPOTIFY_CLIENT_SECRET");
+        let token = read_from_env_file("SPOTIFY_TOKEN");
+        let refresh_token = read_from_env_file("SPOTIFY_REFRESH_TOKEN");
 
         let http_client = reqwest::blocking::Client::new();
 
